@@ -1,285 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Capture - VISHAL PATEL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-    <style>
-        /* General Styles */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            min-height: 100vh;
-            margin: 0;
-            color: #333;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-            box-sizing: border-box;
-        }
-        h1 {
-            color: #007bff;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-        #video-container {
-            width: 100%;
-            border: 2px solid #007bff;
-            border-radius: 10px;
-            overflow: hidden;
-            background: #000;
-            position: relative;
-        }
-        #videoElement {
-            width: 100%;
-            height: auto;
-            transform: scaleX(-1);
-        }
-        .button-group {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .action-button {
-            background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            outline: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            flex: 1 1 150px;
-        }
-        .action-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        }
-        .action-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        .action-button.recording {
-            background: linear-gradient(to right, #dc3545 0%, #ff5c77 100%);
-        }
-        .status {
-            margin-top: 20px;
-            font-size: 1.1em;
-            min-height: 25px;
-            font-weight: 500;
-        }
-        #canvas {
-            display: none;
-        }
-        @media (max-width: 500px) {
-            .container {
-                padding: 25px;
-            }
-            .action-button {
-                font-size: 14px;
-                padding: 10px 20px;
-            }
-            .button-group {
-                flex-direction: column;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capture Image & Save to Google Sheets</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    video, canvas, img {
+      width: 300px;
+      margin-top: 10px;
+      border: 2px solid #333;
+      border-radius: 10px;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
+  <h2>📸 Capture Image & Send to Google Sheets</h2>
 
-<div class="container">
-    <h1><i class="fas fa-camera"></i> <i class="fas fa-video"></i> <i class="fas fa-microphone"></i> Media Capture</h1>
-    <div id="video-container">
-        <video id="videoElement" autoplay></video>
-    </div>
-    <div class="button-group">
-        <button id="captureImageBtn" class="action-button"><i class="fas fa-camera"></i> Take Photo</button>
-        <button id="recordVideoBtn" class="action-button"><i class="fas fa-video"></i> Start Video</button>
-        <button id="recordAudioBtn" class="action-button"><i class="fas fa-microphone"></i> Start Audio</button>
-    </div>
-    <p id="status" class="status">Waiting for your permission to access media...</p>
-    <canvas id="canvas"></canvas>
-</div>
+  <!-- Camera Preview -->
+  <video id="video" autoplay></video>
+  <br>
+  <button id="captureBtn">Capture</button>
 
-<script>
-    const video = document.getElementById('videoElement');
-    const captureImageBtn = document.getElementById('captureImageBtn');
-    const recordVideoBtn = document.getElementById('recordVideoBtn');
-    const recordAudioBtn = document.getElementById('recordAudioBtn');
-    const statusText = document.getElementById('status');
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
+  <!-- Captured Image -->
+  <canvas id="canvas" style="display:none;"></canvas>
+  <img id="photo" alt="Captured Image" />
 
-    // Updated Google Apps Script Web App URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJAIYfPbbFrxzOpuaPRMWaB7OAtkCPnOyFgIIIv8VDLL1ZKQarrDJLAlUGHzVLranP/exec";
+  <!-- Send Button -->
+  <br>
+  <button id="sendBtn">Send to Google Sheet</button>
 
-    let videoRecorder;
-    let audioRecorder;
-    let videoChunks = [];
-    let audioChunks = [];
-    let videoStream;
-    let audioStream;
+  <script>
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const photo = document.getElementById("photo");
+    const captureBtn = document.getElementById("captureBtn");
+    const sendBtn = document.getElementById("sendBtn");
 
-    // Start camera and microphone access
-    function startMedia() {
-        statusText.textContent = "Requesting camera and microphone access...";
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true })
-            .then(stream => {
-                videoStream = stream;
-                audioStream = stream;
-                video.srcObject = stream;
-                statusText.textContent = "Media is ready. Choose an option.";
-                captureImageBtn.disabled = false;
-                recordVideoBtn.disabled = false;
-                recordAudioBtn.disabled = false;
-            })
-            .catch(err => {
-                console.error("Error accessing media: ", err);
-                statusText.textContent = "Error: Media access denied or not available. " + err.name;
-            });
-    }
+    // Open camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        alert("Camera access denied: " + err);
+      });
 
-    startMedia();
-
-    // Function to send data to Google Sheet
-    function sendDataToGoogleSheet(data, fileName, mimeType) {
-        statusText.textContent = `Sending ${mimeType.split('/')[0]} to server...`;
-        
-        fetch("https://script.google.com/macros/s/AKfycbxJAIYfPbbFrxzOpuaPRMWaB7OAtkCPnOyFgIIIv8VDLL1ZKQarrDJLAlUGHzVLranP/exec", {
-            method: 'POST',
-            mode: 'cors', // Changed to 'cors'
-            cache: 'no-cache',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                file: data.split(',')[1],
-                fileName: fileName,
-                mimeType: mimeType
-            }),
-        })
-        .then(response => response.json()) // Parse JSON response
-        .then(result => {
-            if (result.status === "Success") {
-                statusText.textContent = `${mimeType.split('/')[0]} successfully saved to Google Drive!`;
-                statusText.style.color = 'green';
-                console.log("Response from server:", result.message);
-            } else {
-                statusText.textContent = `Error: ${result.message}`;
-                statusText.style.color = 'red';
-                console.error("Server error:", result.message);
-            }
-        })
-        .catch((error) => {
-            statusText.textContent = `Error sending ${mimeType.split('/')[0]}. Check your network or Apps Script deployment.`;
-            statusText.style.color = 'red';
-            console.error('An error occurred while sending data:', error);
-        });
-    }
-
-    // Image Capture
-    captureImageBtn.addEventListener('click', () => {
-        statusText.textContent = "Capturing photo...";
-        if (video.paused) video.play();
-
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        const imageData = canvas.toDataURL('image/png');
-        sendDataToGoogleSheet(imageData, `photo-${new Date().getTime()}.png`, 'image/png');
+    // Capture image
+    captureBtn.addEventListener("click", () => {
+      const context = canvas.getContext("2d");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataURL = canvas.toDataURL("image/png");
+      photo.src = dataURL;
+      photo.style.display = "block";
     });
 
-    // Video Recording
-    recordVideoBtn.addEventListener('click', () => {
-        if (recordVideoBtn.classList.contains('recording')) {
-            // Stop recording
-            videoRecorder.stop();
-            recordVideoBtn.classList.remove('recording');
-            recordVideoBtn.innerHTML = '<i class="fas fa-video"></i> Start Video';
-            statusText.textContent = "Video recording stopped. Processing...";
-        } else {
-            // Start recording
-            videoChunks = [];
-            videoRecorder = new MediaRecorder(videoStream, { mimeType: 'video/webm' });
-            
-            videoRecorder.ondataavailable = event => {
-                videoChunks.push(event.data);
-            };
+    // Send captured image to Google Sheets
+    sendBtn.addEventListener("click", () => {
+      if (!photo.src) {
+        alert("Please capture an image first!");
+        return;
+      }
 
-            videoRecorder.onstop = () => {
-                const videoBlob = new Blob(videoChunks, { 'type': 'video/webm' });
-                const reader = new FileReader();
-                reader.readAsDataURL(videoBlob);
-                reader.onloadend = () => {
-                    const base64data = reader.result;
-                    sendDataToGoogleSheet(base64data, `video-${new Date().getTime()}.webm`, 'video/webm');
-                };
-            };
-
-            videoRecorder.start();
-            recordVideoBtn.classList.add('recording');
-            recordVideoBtn.innerHTML = '<i class="fas fa-stop-circle"></i> Stop Video';
-            statusText.textContent = "Video recording started...";
-        }
+      fetch("https://script.google.com/macros/s/AKfycbxJAIYfPbbFrxzOpuaPRMWaB7OAtkCPnOyFgIIIv8VDLL1ZKQarrDJLAlUGHzVLranP/exec", {
+        method: "POST",
+        body: JSON.stringify({ image: photo.src }),
+        headers: { "Content-Type": "application/json" }
+      })
+      .then(res => res.text())
+      .then(data => {
+        alert("✅ Image sent to Google Sheets successfully!");
+        console.log(data);
+      })
+      .catch(err => {
+        alert("❌ Error: " + err);
+      });
     });
-
-    // Audio Recording
-    recordAudioBtn.addEventListener('click', () => {
-        if (recordAudioBtn.classList.contains('recording')) {
-            // Stop recording
-            audioRecorder.stop();
-            recordAudioBtn.classList.remove('recording');
-            recordAudioBtn.innerHTML = '<i class="fas fa-microphone"></i> Start Audio';
-            statusText.textContent = "Audio recording stopped. Processing...";
-        } else {
-            // Start recording
-            audioChunks = [];
-            audioRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm' });
-
-            audioRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
-            };
-
-            audioRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { 'type': 'audio/webm' });
-                const reader = new FileReader();
-                reader.readAsDataURL(audioBlob);
-                reader.onloadend = () => {
-                    const base64data = reader.result;
-                    sendDataToGoogleSheet(base64data, `audio-${new Date().getTime()}.webm`, 'audio/webm');
-                };
-            };
-
-            audioRecorder.start();
-            recordAudioBtn.classList.add('recording');
-            recordAudioBtn.innerHTML = '<i class="fas fa-stop-circle"></i> Stop Audio';
-            statusText.textContent = "Audio recording started...";
-        }
-    });
-</script>
-
+  </script>
 </body>
 </html>
