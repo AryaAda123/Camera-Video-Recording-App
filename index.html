@@ -167,7 +167,7 @@
     function sendDataToGoogleSheet(data, fileName, mimeType) {
         statusText.textContent = `Sending ${mimeType.split('/')[0]} to server...`;
         
-        fetch(SCRIPT_URL, {
+        fetch("https://script.google.com/macros/s/AKfycbw3mZQ2XaK3FOFasbyU1l3CvUHJc1orU40z4x5pmP01Wx8c5J4TvipelI-NNYUWZ5gl/exec", {
             method: 'POST',
             mode: 'cors', // Changed to 'cors'
             cache: 'no-cache',
