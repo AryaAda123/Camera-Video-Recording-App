@@ -169,7 +169,7 @@
         
         fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
+            mode: 'cors', // Changed to 'cors'
             cache: 'no-cache',
             headers: {
                 'Content-Type': 'application/json',
@@ -180,10 +180,17 @@
                 mimeType: mimeType
             }),
         })
-        .then(() => {
-            statusText.textContent = `${mimeType.split('/')[0]} successfully saved to Google Drive!`;
-            statusText.style.color = 'green';
-            console.log(`${mimeType.split('/')[0]} saved to Google Drive successfully!`);
+        .then(response => response.json()) // Parse JSON response
+        .then(result => {
+            if (result.status === "Success") {
+                statusText.textContent = `${mimeType.split('/')[0]} successfully saved to Google Drive!`;
+                statusText.style.color = 'green';
+                console.log("Response from server:", result.message);
+            } else {
+                statusText.textContent = `Error: ${result.message}`;
+                statusText.style.color = 'red';
+                console.error("Server error:", result.message);
+            }
         })
         .catch((error) => {
             statusText.textContent = `Error sending ${mimeType.split('/')[0]}. Check your network or Apps Script deployment.`;
