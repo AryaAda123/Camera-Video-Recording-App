@@ -133,7 +133,7 @@
     const context = canvas.getContext('2d');
 
     // Updated Google Apps Script Web App URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJAIYfPbbFrxzOpuaPRMWaB7OAtkCPnOyFgIIIv8VDLL1ZKQarrDJLAlUGHzVLranP/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-c_PBxwYE1OAcw6H1n3XPLTVnvLiuSeBDGtg4B5bZqbC1XaFMz4LEL7apsqtxThkx/exec";
 
     let videoRecorder;
     let audioRecorder;
@@ -167,9 +167,9 @@
     function sendDataToGoogleSheet(data, fileName, mimeType) {
         statusText.textContent = `Sending ${mimeType.split('/')[0]} to server...`;
         
-        fetch("https://script.google.com/macros/s/AKfycbxJAIYfPbbFrxzOpuaPRMWaB7OAtkCPnOyFgIIIv8VDLL1ZKQarrDJLAlUGHzVLranP/exec", {
+        fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'cors', // Changed to 'cors'
+            mode: 'cors',
             cache: 'no-cache',
             headers: {
                 'Content-Type': 'application/json',
@@ -180,7 +180,15 @@
                 mimeType: mimeType
             }),
         })
-        .then(response => response.json()) // Parse JSON response
+        .then(response => {
+            // Check if the response is valid JSON
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                return response.json();
+            } else {
+                throw new TypeError("Did not receive JSON response from server. Check Apps Script.");
+            }
+        })
         .then(result => {
             if (result.status === "Success") {
                 statusText.textContent = `${mimeType.split('/')[0]} successfully saved to Google Drive!`;
@@ -203,11 +211,9 @@
     captureImageBtn.addEventListener('click', () => {
         statusText.textContent = "Capturing photo...";
         if (video.paused) video.play();
-
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
         const imageData = canvas.toDataURL('image/png');
         sendDataToGoogleSheet(imageData, `photo-${new Date().getTime()}.png`, 'image/png');
     });
@@ -224,11 +230,9 @@
             // Start recording
             videoChunks = [];
             videoRecorder = new MediaRecorder(videoStream, { mimeType: 'video/webm' });
-            
             videoRecorder.ondataavailable = event => {
                 videoChunks.push(event.data);
             };
-
             videoRecorder.onstop = () => {
                 const videoBlob = new Blob(videoChunks, { 'type': 'video/webm' });
                 const reader = new FileReader();
@@ -238,7 +242,6 @@
                     sendDataToGoogleSheet(base64data, `video-${new Date().getTime()}.webm`, 'video/webm');
                 };
             };
-
             videoRecorder.start();
             recordVideoBtn.classList.add('recording');
             recordVideoBtn.innerHTML = '<i class="fas fa-stop-circle"></i> Stop Video';
@@ -258,11 +261,9 @@
             // Start recording
             audioChunks = [];
             audioRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm' });
-
             audioRecorder.ondataavailable = event => {
                 audioChunks.push(event.data);
             };
-
             audioRecorder.onstop = () => {
                 const audioBlob = new Blob(audioChunks, { 'type': 'audio/webm' });
                 const reader = new FileReader();
@@ -272,7 +273,6 @@
                     sendDataToGoogleSheet(base64data, `audio-${new Date().getTime()}.webm`, 'audio/webm');
                 };
             };
-
             audioRecorder.start();
             recordAudioBtn.classList.add('recording');
             recordAudioBtn.innerHTML = '<i class="fas fa-stop-circle"></i> Stop Audio';
