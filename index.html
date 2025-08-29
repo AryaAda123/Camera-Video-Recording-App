@@ -133,7 +133,7 @@
     const context = canvas.getContext('2d');
 
     // Updated Google Apps Script Web App URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwz8LAOeqNxDWr45hQVXESmoUwE9Z-gWoJD90Z0CdeFCcyTnVbjvSw69bwY-tFQfzqZig/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJAIYfPbbFrxzOpuaPRMWaB7OAtkCPnOyFgIIIv8VDLL1ZKQarrDJLAlUGHzVLranP/exec";
 
     let videoRecorder;
     let audioRecorder;
@@ -167,7 +167,7 @@
     function sendDataToGoogleSheet(data, fileName, mimeType) {
         statusText.textContent = `Sending ${mimeType.split('/')[0]} to server...`;
         
-        fetch("https://script.google.com/macros/s/AKfycbw3mZQ2XaK3FOFasbyU1l3CvUHJc1orU40z4x5pmP01Wx8c5J4TvipelI-NNYUWZ5gl/exec", {
+        fetch("https://script.google.com/macros/s/AKfycbxJAIYfPbbFrxzOpuaPRMWaB7OAtkCPnOyFgIIIv8VDLL1ZKQarrDJLAlUGHzVLranP/exec", {
             method: 'POST',
             mode: 'cors', // Changed to 'cors'
             cache: 'no-cache',
